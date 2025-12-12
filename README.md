@@ -35,43 +35,6 @@
 - **スタイリング**: CSS Modules
 - **ビルドツール**: Vite
 
-## 開発
-
-### 必要要件
-
-- Node.js (推奨: v18以上)
-- npm または yarn
-
-### セットアップ
-
-```bash
-# 依存関係のインストール
-npm install
-
-# 開発サーバーの起動
-npm run dev
-```
-
-ブラウザで `http://localhost:5173` を開くとゲームが起動します。
-
-### ビルド
-
-```bash
-# プロダクションビルド
-npm run build
-
-# ビルドのプレビュー
-npm run preview
-```
-
-ビルド成果物は `dist/` ディレクトリに出力されます。
-
-### Lintチェック
-
-```bash
-npm run lint
-```
-
 ## プロジェクト構造
 
 ```
@@ -94,7 +57,7 @@ src/
 
 ## 音声ファイルについて
 
-ゲームで使用する音声ファイルは `public/audio/` ディレクトリに配置してください。
+ゲームで使用する音声ファイルは `public/audio/` ディレクトリに配置。
 
 必要なファイル:
 - `bgm/title.mp3` - タイトル画面
@@ -105,11 +68,11 @@ src/
 - `sfx/countdown.mp3` - カウントダウン
 - `sfx/start.mp3` - スタート
 
-詳細は `public/audio/README.md` を参照してください。
+詳細は `public/audio/README.md` を参照。
 
 ## クレジットの追加
 
-クレジット情報を追加する場合は、`CREDITS_GUIDE.md` を参照してください。
+クレジット情報を追加する場合は、`CREDITS_GUIDE.md` を参照。
 
 ## クレジット
 
