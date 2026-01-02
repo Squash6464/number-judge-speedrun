@@ -5,8 +5,8 @@ import { useGameStore } from '../game/store';
 import { audioManager } from '../game/audioManager';
 import { OptionsModal } from './OptionsModal';
 import { CreditsModal } from './CreditsModal';
-import { SoundToggle } from './SoundToggle'; // Import
-import { DevResolutionPanel } from './DevResolutionPanel'; // New
+import { SoundToggle } from './SoundToggle';
+import { DevResolutionPanel } from './DevResolutionPanel';
 import { TEXT_RESOURCES } from '../game/constants';
 import styles from '../styles/GameScreen.module.css';
 
@@ -51,15 +51,11 @@ export const GameScreen: React.FC = () => {
     }, [isPlaying]);
 
     // 初回マウント時にタイトルBGMを再生
-    // 初回マウント時にタイトルBGMを再生
     useEffect(() => {
-        // Audio Managerの状態をStoreと同期
         const { options } = useGameStore.getState();
 
         audioManager.setBgmMuted(options.isBgmMuted);
         audioManager.setSfxMuted(options.isSfxMuted);
-
-        // 音量も一応設定
         audioManager.setBGMVolume(options.bgmVolume / 5);
         audioManager.setSFXVolume(options.sfxVolume / 5);
 
@@ -102,7 +98,6 @@ export const GameScreen: React.FC = () => {
     }, [isPlaying, pauseGame]);
 
     const handleStart = () => {
-        // カウントダウン開始: 3, 2, 1, START!
         audioManager.stopBGM();
         setCountdown(3);
         audioManager.playSFX('countdown');
@@ -112,15 +107,12 @@ export const GameScreen: React.FC = () => {
             currentCount--;
 
             if (currentCount > 0) {
-                // 3 -> 2 -> 1
                 setCountdown(currentCount);
                 audioManager.playSFX('countdown');
             } else if (currentCount === 0) {
-                // START! を表示
                 setCountdown(0);
                 audioManager.playSFX('start');
             } else {
-                // カウントダウン終了、ゲーム開始
                 clearInterval(countdownInterval);
                 setCountdown(null);
                 startGame();
@@ -139,7 +131,6 @@ export const GameScreen: React.FC = () => {
 
             if (!currentCondition) return;
 
-            // check関数のシグネチャ変更に対応: 第2引数は allNumbers (currentNumbers)
             const isCorrect = currentCondition.check(number, currentNumbers);
             const text = isCorrect ? '+1 Score' : '-5 Sec';
             const type = isCorrect ? 'correct' : 'wrong';
@@ -168,6 +159,15 @@ export const GameScreen: React.FC = () => {
     if (options.simWidth > 0) containerStyle.width = `${options.simWidth}px`;
     if (options.simHeight > 0) containerStyle.height = `${options.simHeight}px`;
 
+    const getVisualLevel = () => {
+        if (score >= 3000) return styles.level4;
+        if (score >= 2000) return styles.level3;
+        if (score >= 1000) return styles.level2;
+        return styles.level1;
+    };
+
+    const isWarning = timeLeft <= 10;
+
     const renderScreen = () => {
         // カウントダウン中 (最優先)
         if (countdown !== null) {
@@ -181,10 +181,10 @@ export const GameScreen: React.FC = () => {
             );
         }
 
-        // ゲーム開始前または終了後（リセット後）
+        // ゲーム開始前または終了後（リセット後） == タイトル画面
         if (!isPlaying && currentNumbers.length === 0) {
             return (
-                <div 
+                <div
                     className={`${styles.container} ${styles.scrollable}`}
                     style={containerStyle}
                 >
@@ -211,185 +211,180 @@ export const GameScreen: React.FC = () => {
                                     onClick={() => { setDifficulty('intermediate'); handleStart(); }}
                                 >
                                     {t.difficulty.intermediate}
-                                <span className={styles.diffInfo}>4 {t.cards}</span>
+                                    <span className={styles.diffInfo}>4 {t.cards}</span>
+                                </button>
+                                <button
+                                    className={`${styles.difficultyBtn} ${styles.diffAdvanced}`}
+                                    onClick={() => { setDifficulty('advanced'); handleStart(); }}
+                                >
+                                    {t.difficulty.advanced}
+                                    <span className={styles.diffInfo}>5 {t.cards}</span>
+                                </button>
+                                <button
+                                    className={`${styles.difficultyBtn} ${styles.diffMaster}`}
+                                    onClick={() => { setDifficulty('master'); handleStart(); }}
+                                >
+                                    {t.difficulty.master}
+                                    <span className={styles.diffInfo}>6 {t.cards}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', justifyContent: 'center' }}>
+                            <button
+                                className={styles.optionsBtn}
+                                onClick={() => setShowOptions(true)}
+                                style={{ background: 'transparent', border: '1px solid #00f3ff', color: '#00f3ff', padding: '0.5rem 2rem', cursor: 'pointer' }}
+                            >
+                                {t.options}
                             </button>
                             <button
-                                className={`${styles.difficultyBtn} ${styles.diffAdvanced}`}
-                                onClick={() => { setDifficulty('advanced'); handleStart(); }}
+                                className={styles.creditsBtn}
+                                onClick={() => setShowCredits(true)}
+                                style={{ background: 'transparent', border: '1px solid #888', color: '#888', padding: '0.5rem 2rem', cursor: 'pointer' }}
                             >
-                                {t.difficulty.advanced}
-                                <span className={styles.diffInfo}>5 {t.cards}</span>
-                            </button>
-                            <button
-                                className={`${styles.difficultyBtn} ${styles.diffMaster}`}
-                                onClick={() => { setDifficulty('master'); handleStart(); }}
-                            >
-                                {t.difficulty.master}
-                                <span className={styles.diffInfo}>6 {t.cards}</span>
+                                {t.credits}
                             </button>
                         </div>
                     </div>
+                    {showOptions && <OptionsModal onClose={() => setShowOptions(false)} />}
+                    {showCredits && <CreditsModal onClose={() => setShowCredits(false)} />}
+                </div>
+            );
+        }
 
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', justifyContent: 'center' }}>
+        // ゲームオーバー画面
+        if (!isPlaying && timeLeft === 0) {
+            return (
+                <div className={styles.gameOver}>
+                    <h2>{t.timeUp}</h2>
+                    <div className={styles.finalScore}>{t.score}: {score}</div>
+                    <div className={styles.gameOverButtons}>
+                        <button className={styles.startButton} onClick={handleStart}>
+                            {t.retry}
+                        </button>
+                        <button className={styles.backButton} onClick={handleQuit}>
+                            {t.backToTitle}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ポーズモーダル
+        if (showPause && !isPlaying) {
+            return (
+                <div className={styles.gameOver}>
+                    <h2 style={{ fontSize: '4rem', color: '#00f3ff' }}>{t.paused}</h2>
+                    <div className={styles.gameOverButtons}>
                         <button
-                            className={styles.optionsBtn}
+                            className={styles.startButton}
+                            onClick={() => { setShowPause(false); resumeGame(); }}
+                        >
+                            {t.resume}
+                        </button>
+                        <button
+                            className={styles.startButton}
                             onClick={() => setShowOptions(true)}
-                            style={{ background: 'transparent', border: '1px solid #00f3ff', color: '#00f3ff', padding: '0.5rem 2rem', cursor: 'pointer' }}
+                            style={{ background: 'transparent', border: '1px solid #00f3ff', color: '#00f3ff' }}
                         >
                             {t.options}
                         </button>
                         <button
-                            className={styles.creditsBtn}
-                            onClick={() => setShowCredits(true)}
-                            style={{ background: 'transparent', border: '1px solid #888', color: '#888', padding: '0.5rem 2rem', cursor: 'pointer' }}
+                            className={styles.backButton}
+                            onClick={() => { setShowPause(false); handleQuit(); }}
                         >
-                            {t.credits}
+                            {t.quit}
                         </button>
                     </div>
-        { showOptions && <OptionsModal onClose={() => setShowOptions(false)} /> }
-        { showCredits && <CreditsModal onClose={() => setShowCredits(false)} /> }
-                </div >
+                    {showOptions && <OptionsModal onClose={() => setShowOptions(false)} />}
+                </div>
             );
         }
 
-// ゲームオーバー画面
-if (!isPlaying && timeLeft === 0) {
-    return (
-        <div className={styles.gameOver}>
-            <h2>{t.timeUp}</h2>
-            <div className={styles.finalScore}>{t.score}: {score}</div>
-            <div className={styles.gameOverButtons}>
-                <button className={styles.startButton} onClick={handleStart}>
-                    {t.retry}
-                </button>
-                <button className={styles.backButton} onClick={handleQuit}>
-                    {t.backToTitle}
-                </button>
-            </div>
-        </div>
-    );
-}
+        // メインゲーム画面（デフォルト）
+        return (
+            <>
+                {showFlash === 'correct' && <div className={styles['anim-flash-correct']} />}
+                {showFlash === 'wrong' && <div className={styles['anim-flash-wrong']} />}
 
-// ポーズモーダル
-if (showPause && !isPlaying) {
-    return (
-        <div className={styles.gameOver}>
-            <h2 style={{ fontSize: '4rem', color: '#00f3ff' }}>{t.paused}</h2>
-            <div className={styles.gameOverButtons}>
-                <button
-                    className={styles.startButton}
-                    onClick={() => { setShowPause(false); resumeGame(); }}
-                >
-                    {t.resume}
-                </button>
-                <button
-                    className={styles.startButton}
-                    onClick={() => setShowOptions(true)}
-                    style={{ background: 'transparent', border: '1px solid #00f3ff', color: '#00f3ff' }}
-                >
-                    {t.options}
-                </button>
-                <button
-                    className={styles.backButton}
-                    onClick={() => { setShowPause(false); handleQuit(); }}
-                >
-                    {t.quit}
-                </button>
-            </div>
-            {showOptions && <OptionsModal onClose={() => setShowOptions(false)} />}
-        </div>
-    );
-}
+                {isWarning && <div className={styles.warningVignette} />}
 
-// メインゲーム画面
-const getVisualLevel = () => {
-    if (score >= 3000) return styles.level4;
-    if (score >= 2000) return styles.level3;
-    if (score >= 1000) return styles.level2;
-    return styles.level1;
-};
+                {floatingTexts.map((ft) => (
+                    <div
+                        key={ft.id}
+                        className={`${styles.floatingText} ${ft.type === 'correct' ? styles.floatCorrect : styles.floatWrong}`}
+                        style={{ left: ft.x, top: ft.y }}
+                    >
+                        {ft.text}
+                    </div>
+                ))}
 
-const isWarning = timeLeft <= 10;
-
-return (
-    <>
-        {showFlash === 'correct' && <div className={styles['anim-flash-correct']} />}
-        {showFlash === 'wrong' && <div className={styles['anim-flash-wrong']} />}
-
-        {isWarning && <div className={styles.warningVignette} />}
-
-        {floatingTexts.map((ft) => (
-            <div
-                key={ft.id}
-                className={`${styles.floatingText} ${ft.type === 'correct' ? styles.floatCorrect : styles.floatWrong}`}
-                style={{ left: ft.x, top: ft.y }}
-            >
-                {ft.text}
-            </div>
-        ))}
-
-        <div className={styles.gameWrapper}>
-            {/* Left Sidebar: Stats */}
-            <div className={styles.leftSidebar}>
-                <div className={styles.statItem}>
-                    <div className={styles.statLabel}>{t.statScore}</div>
-                    <div className={styles.statValue}>{score}</div>
-                </div>
-                <div className={styles.statItem}>
-                    <div className={styles.statLabel}>{t.statCorrect}</div>
-                    <div className={styles.statValue} style={{ color: '#00ff00' }}>{correctCount}</div>
-                </div>
-                <div className={styles.statItem}>
-                    <div className={styles.statLabel}>{t.statMiss}</div>
-                    <div className={styles.statValue} style={{ color: '#ff0055' }}>{missCount}</div>
-                </div>
-            </div>
-
-            {/* Center: Game Area */}
-            <div className={`${styles.gameArea} ${getVisualLevel()}`}>
-                <div className={styles.conditionBox}>
-                    {options.language === 'en' ? currentCondition?.descriptionEn : currentCondition?.descriptionJa}
-                </div>
-
-                <div className={`${styles.timer} ${isWarning ? styles.timerWarning : ''}`}>
-                    {t.timer}: {timeLeft}
-                </div>
-
-                <div className={`${styles.cardsContainer} ${styles[difficulty] || ''}`}>
-                    {currentNumbers.map((num, index) => (
-                        <div
-                            key={`${index}-${num}`}
-                            className={styles.card}
-                            onClick={(e) => handleCardClick(num, e)}
-                        >
-                            {num}
+                <div className={styles.gameWrapper}>
+                    {/* Left Sidebar: Stats */}
+                    <div className={styles.leftSidebar}>
+                        <div className={styles.statItem}>
+                            <div className={styles.statLabel}>{t.statScore}</div>
+                            <div className={styles.statValue}>{score}</div>
                         </div>
-                    ))}
-                </div>
-            </div>
+                        <div className={styles.statItem}>
+                            <div className={styles.statLabel}>{t.statCorrect}</div>
+                            <div className={styles.statValue} style={{ color: '#00ff00' }}>{correctCount}</div>
+                        </div>
+                        <div className={styles.statItem}>
+                            <div className={styles.statLabel}>{t.statMiss}</div>
+                            <div className={styles.statValue} style={{ color: '#ff0055' }}>{missCount}</div>
+                        </div>
+                    </div>
 
-            {/* Right Sidebar: Pause Button */}
-            <div className={styles.rightSidebar}>
-                <button className={styles.pauseBtn} onClick={handlePause}>
-                    {t.pauseBtn}
-                </button>
-            </div>
-        </div>
-    </>
-);
+                    {/* Center: Game Area */}
+                    <div className={`${styles.gameArea} ${getVisualLevel()}`}>
+                        <div className={styles.conditionBox}>
+                            {options.language === 'en' ? currentCondition?.descriptionEn : currentCondition?.descriptionJa}
+                        </div>
+
+                        <div className={`${styles.timer} ${isWarning ? styles.timerWarning : ''}`}>
+                            {t.timer}: {timeLeft}
+                        </div>
+
+                        <div className={`${styles.cardsContainer} ${styles[difficulty] || ''}`}>
+                            {currentNumbers.map((num, index) => (
+                                <div
+                                    key={`${index}-${num}`}
+                                    className={styles.card}
+                                    onClick={(e) => handleCardClick(num, e)}
+                                >
+                                    {num}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Sidebar: Pause Button */}
+                    <div className={styles.rightSidebar}>
+                        <button className={styles.pauseBtn} onClick={handlePause}>
+                            {t.pauseBtn}
+                        </button>
+                    </div>
+                </div>
+            </>
+        );
     };
 
-return (
-    <div
-        className={`${styles.container} ${shakeContainer ? styles['anim-shake'] : ''}`}
-        style={containerStyle}
-    >
-        {/* Resolution Adjustment Panel (Dev) */}
-        <DevResolutionPanel />
+    // Main Component Render
+    return (
+        <div
+            className={`${styles.container} ${shakeContainer ? styles['anim-shake'] : ''}`}
+            style={containerStyle}
+        >
+            {/* Resolution Adjustment Panel (Dev) */}
+            <DevResolutionPanel />
 
-        {/* Persistent Sound Toggle */}
-        <SoundToggle />
-        {renderScreen()}
-    </div>
-);
+            {/* Persistent Sound Toggle */}
+            <SoundToggle />
+
+            {/* Screen Content */}
+            {renderScreen()}
+        </div>
+    );
 };
