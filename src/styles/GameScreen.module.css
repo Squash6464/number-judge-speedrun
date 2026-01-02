@@ -33,15 +33,28 @@
     max-height: 100dvh;
 }
 
+.scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+    min-height: 100dvh;
+    justify-content: flex-start;
+    /* コンテンツが溢れた場合に上詰めにする */
+    -webkit-overflow-scrolling: touch;
+}
+
 /* Title Screen */
-.titleScreen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 40px;
-    z-index: 10;
-    width: 100%;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 40px;
+z-index: 10;
+width: 100%;
+padding: 40px 0;
+/* 上下に余白を追加 */
+min-height: 100dvh;
+/* 画面いっぱいに広げる */
 }
 
 .titleLogo {

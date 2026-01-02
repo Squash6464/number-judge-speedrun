@@ -22,6 +22,9 @@
     border-radius: 10px;
     color: #fff;
     font-family: 'Inter', sans-serif;
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .title {
