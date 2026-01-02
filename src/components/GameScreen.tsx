@@ -182,22 +182,35 @@ export const GameScreen: React.FC = () => {
         }
 
         // ゲーム開始前または終了後（リセット後）
+        if (!isPlaying && currentNumbers.length === 0) {
+            return (
+                <div 
+                    className={`${styles.container} ${styles.scrollable}`}
+                    style={containerStyle}
+                >
+                    <div className={styles.titleScreen}>
+                        <div className={styles.titleLogo}>
+                            NUMBER JUDGE<br />SPEEDRUN
+                        </div>
+                        <div className={styles.titleSubtitle}>
+                            {t.titleSubtitle}
+                        </div>
 
-                    <div className={styles.difficultyContainer}>
-                        <p className={styles.difficultyLabel}>{t.selectDifficulty}</p>
-                        <div className={styles.difficultyButtons}>
-                            <button
-                                className={`${styles.difficultyBtn} ${styles.diffBeginner}`}
-                                onClick={() => { setDifficulty('beginner'); handleStart(); }}
-                            >
-                                {t.difficulty.beginner}
-                                <span className={styles.diffInfo}>3 {t.cards}</span>
-                            </button>
-                            <button
-                                className={`${styles.difficultyBtn} ${styles.diffIntermediate}`}
-                                onClick={() => { setDifficulty('intermediate'); handleStart(); }}
-                            >
-                                {t.difficulty.intermediate}
+                        <div className={styles.difficultyContainer}>
+                            <p className={styles.difficultyLabel}>{t.selectDifficulty}</p>
+                            <div className={styles.difficultyButtons}>
+                                <button
+                                    className={`${styles.difficultyBtn} ${styles.diffBeginner}`}
+                                    onClick={() => { setDifficulty('beginner'); handleStart(); }}
+                                >
+                                    {t.difficulty.beginner}
+                                    <span className={styles.diffInfo}>3 {t.cards}</span>
+                                </button>
+                                <button
+                                    className={`${styles.difficultyBtn} ${styles.diffIntermediate}`}
+                                    onClick={() => { setDifficulty('intermediate'); handleStart(); }}
+                                >
+                                    {t.difficulty.intermediate}
                                 <span className={styles.diffInfo}>4 {t.cards}</span>
                             </button>
                             <button
